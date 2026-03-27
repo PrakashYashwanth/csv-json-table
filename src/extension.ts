@@ -2,17 +2,34 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.window.registerCustomEditorProvider(
-      "csvJsonTable.editor",
-      new CsvEditorProvider(context),
-      {
-        webviewOptions: {
-          retainContextWhenHidden: true,
-        },
-      },
-    ),
+  const disposable = vscode.commands.registerCommand(
+    "csvJsonTable.open",
+    (uri: vscode.Uri) => {
+      const panel = vscode.window.createWebviewPanel(
+        "csvTable",
+        "CSV Config Table",
+        vscode.ViewColumn.One,
+        { enableScripts: true },
+      );
+
+      let filePath = uri.fsPath;
+      let csvContent = fs.readFileSync(filePath, "utf8");
+      panel.webview.html = getWebviewContent(csvContent, filePath);
+
+      panel.webview.onDidReceiveMessage((message) => {
+        if (message.command === "save") {
+          fs.writeFileSync(filePath, message.data);
+          vscode.window.showInformationMessage("CSV saved");
+
+          // Reload the file content back into the Webview
+          const latestCsv = fs.readFileSync(filePath, "utf8");
+          panel.webview.postMessage({ command: "reload", data: latestCsv });
+        }
+      });
+    },
   );
+
+  context.subscriptions.push(disposable);
 }
 
 function getWebviewContent(csvData: string, filePath: string): string {
@@ -316,54 +333,6 @@ initialize(\`${escapedCsv}\`);
 </body>
 </html>
 `;
-}
-
-class CsvEditorProvider implements vscode.CustomTextEditorProvider {
-  constructor(private context: vscode.ExtensionContext) {}
-
-  async resolveCustomTextEditor(
-    document: vscode.TextDocument,
-    webviewPanel: vscode.WebviewPanel,
-  ): Promise<void> {
-    webviewPanel.webview.options = {
-      enableScripts: true,
-    };
-
-    const updateWebview = () => {
-      webviewPanel.webview.html = getWebviewContent(
-        document.getText(),
-        document.uri.fsPath,
-      );
-    };
-
-    updateWebview();
-
-    // Listen for edits from Webview
-    webviewPanel.webview.onDidReceiveMessage((message) => {
-      if (message.command === "save") {
-        const edit = new vscode.WorkspaceEdit();
-        edit.replace(
-          document.uri,
-          new vscode.Range(0, 0, document.lineCount, 0),
-          message.data,
-        );
-        vscode.workspace.applyEdit(edit);
-      }
-    });
-
-    // If file changes externally → refresh UI
-    const changeDocSubscription = vscode.workspace.onDidChangeTextDocument(
-      (e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          updateWebview();
-        }
-      },
-    );
-
-    webviewPanel.onDidDispose(() => {
-      changeDocSubscription.dispose();
-    });
-  }
 }
 
 export function deactivate() {}

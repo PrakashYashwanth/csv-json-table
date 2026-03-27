@@ -1,9 +1,8 @@
 {
   "name": "csv-json-table",
-  "displayName": "CSV JSON Table Editor",
-  "description": "Edit CSV files as a spreadsheet with JSON support (Monaco powered)",
+  "displayName": "CSV JSON Table",
+  "description": "CSV table view with JSON cell editing",
   "version": "0.0.1",
-  "publisher": "mssprakashyashwanth",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -15,18 +14,6 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "customEditors": [
-      {
-        "viewType": "csvJsonTable.editor",
-        "displayName": "CSV Config Table",
-        "selector": [
-          {
-            "filenamePattern": "*.csv"
-          }
-        ],
-        "priority": "default"
-      }
-    ],
     "commands": [
       {
         "command": "csvJsonTable.open",
@@ -36,21 +23,20 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "csvJsonTable.open",
           "when": "resourceExtname == .csv",
+          "command": "csvJsonTable.open",
           "group": "navigation"
         }
       ]
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.3.3",
     "@types/vscode": "^1.80.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.3"
   }
 }
