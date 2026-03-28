@@ -1,107 +1,111 @@
-# CSV JSON Table Editor
+# 🚀 CSV + JSON Editor for Developers
 
-A VS Code extension for editing large CSV files with inline JSON cell editing and virtual scrolling.
+> A fast, developer-first CSV editor with built-in JSON intelligence — designed for real-world data workflows.
 
-## Features
+---
 
-- **Table View**: View CSV files in a clean, interactive table format
-- **JSON Cell Editing**: Double-click JSON cells to edit them in a Monaco editor with syntax highlighting
-- **Virtual Scrolling**: Handles large CSV files (1000+ rows) efficiently
-- **Filtering & Sorting**: Filter columns and sort by clicking headers
-- **Inline Editing**: Edit regular cells inline
-- **Undo/Redo**: Full undo/redo support (Cmd/Ctrl+Z)
-- **Auto-sync**: File watcher detects external changes
-- **Dark/Light Theme**: Automatically matches your VS Code theme
+## ⚡ Why this exists
 
-## Usage
+Editing CSVs in VS Code usually means:
 
-1. Right-click any `.csv` file in the Explorer
-2. Select **"Open CSV as Config Table"**
-3. Edit cells:
-   - **Double-click** any cell to edit
-   - **JSON cells** open in a full Monaco editor
-   - **Enter** to save, **Esc** to cancel
-4. **Cmd/Ctrl+S** to save changes to disk
+- ❌ Poor performance on large files
+- ❌ No support for structured data inside cells
+- ❌ Constant switching to Excel or external tools
 
-## Keyboard Shortcuts
+This extension fixes that.
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd/Ctrl+S` | Save CSV file |
-| `Cmd/Ctrl+Z` | Undo |
-| `Cmd/Ctrl+Shift+Z` | Redo |
-| `Enter` | Commit inline edit |
-| `Esc` | Cancel edit / Close JSON editor |
-| `Cmd/Ctrl+Enter` | Apply JSON edit (in Monaco) |
+---
 
-## Development
+## 🧠 What makes this different
 
-### Setup
+This is not just another CSV viewer.
 
-```bash
-npm install
-npm run compile
-```
+It’s built specifically for **developers who deal with structured data inside CSVs** — configs, exports, logs, and hybrid datasets.
 
-### Build
+---
 
-```bash
-npm run compile          # Build extension + webview
-npm run compile:ext      # Build extension only
-npm run compile:webview  # Build webview only
-npm run watch            # Watch extension
-npm run watch:webview    # Watch webview
-```
+## ✨ Key Features
 
-### Test
+### 🏎️ Fast & Scalable
 
-1. Press `F5` to open Extension Development Host
-2. Open `test-large.csv` (3500 rows generated automatically)
-3. Right-click → "Open CSV as Config Table"
+- Handles large CSV files smoothly
+- Virtualized table rendering (no UI lag)
 
-## Architecture
+### 🧩 JSON-Aware Cells
 
-```
-src/
-├── extension.ts              # Entry point
-├── host/                     # Extension host (Node.js)
-│   ├── PanelManager.ts      # Webview lifecycle
-│   ├── StateManager.ts      # State synchronization
-│   ├── FileSyncService.ts   # File watching
-│   └── MessageHandler.ts    # Message routing
-├── services/                 # Pure business logic
-│   ├── CsvParser.ts         # CSV parsing
-│   └── JsonValidator.ts     # JSON detection
-├── webview/                  # Webview (browser)
-│   ├── main.ts              # Entry point
-│   ├── models/              # View models
-│   └── components/          # UI components
-└── shared/                   # Shared types
-    ├── types.ts
-    ├── messages.ts
-    └── jsonColumns.ts
+- Edit JSON directly inside cells
+- Monaco-powered editor for syntax highlighting & validation
+- Perfect for config-heavy workflows
 
-media/
-├── index.html               # Webview HTML template
-├── main.css                 # Styles
-└── webview.js               # Bundled webview code (generated)
-```
+### ✏️ Spreadsheet-like Editing
 
-## Performance
+- Inline editing experience
+- Familiar table layout
+- Quick navigation across rows & columns
 
-- **Virtual scrolling**: Only renders visible rows (~50 DOM nodes for 10,000+ rows)
-- **Efficient updates**: Only re-renders changed cells
-- **Lazy JSON detection**: Cached column type detection
+### 🔄 File Sync & Persistence
 
-## Requirements
+- Changes reflect directly in your CSV file
+- No manual export/import needed
 
-- VS Code 1.80.0 or higher
+### ↩️ Undo / Redo Support
 
-## Known Issues
+- Safe editing with built-in history tracking
 
-- Very wide CSVs (100+ columns) may have horizontal scroll performance issues
-- Monaco editor loads from CDN (requires internet connection)
+---
 
-## License
+## 🎯 Who is this for?
 
-MIT
+This extension is especially useful if you:
+
+- Work with **CSV files containing JSON**
+- Manage **config-driven systems**
+- Handle **data exports / logs**
+- Want to stay inside **VS Code instead of switching tools**
+
+---
+
+## 🧪 Real Use Cases
+
+- Editing feature flags stored in CSV
+- Updating API payload configs
+- Cleaning and inspecting data exports
+- Managing hybrid CSV + JSON datasets
+
+---
+
+## 🚀 Getting Started
+
+1. Open any `.csv` file
+2. Launch the editor
+3. Start editing — including JSON cells
+
+---
+
+## 🔮 What’s coming next
+
+We’re actively improving this tool. Planned enhancements include:
+
+- JSON schema validation per column
+- Advanced search (including inside JSON)
+- Bulk editing & transformations
+- Column typing & validation
+- Diff view for CSV changes
+
+---
+
+## 💡 Feedback & Contributions
+
+This tool is built for real developer workflows.
+If you have suggestions, feature requests, or ideas — they’re always welcome.
+
+---
+
+## ⭐ Why you might love it
+
+If your CSVs are more than just plain text —
+this extension turns them into something actually usable.
+
+---
+
+**Stop switching tools. Edit smarter, directly in VS Code.**
