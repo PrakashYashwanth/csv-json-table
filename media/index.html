@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src {{CSP_SOURCE}} https://cdn.jsdelivr.net 'unsafe-inline'; script-src {{CSP_SOURCE}} https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; worker-src blob:; connect-src https://cdn.jsdelivr.net blob:; font-src https://cdn.jsdelivr.net;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{STYLE_URI}}" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <title>{{WEBVIEW_TITLE}}</title>
+  </head>
+  <body>
+    <p class="cvt-hint">
+      Alt+click header label to freeze through that column; Alt+Shift+click to
+      unfreeze.
+    </p>
+    <div id="tableRoot">
+      <div id="headerHost"></div>
+      <div id="bodyScroll">
+        <div id="virtualInner">
+          <div id="virtTable"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="editorOverlay">
+      <div id="editorBox">
+        <div id="editorHeader">
+          JSON Editor (Ctrl/Cmd + Enter to apply, Esc to close)
+        </div>
+        <div id="monacoEditor"></div>
+      </div>
+    </div>
+
+    <script type="module" src="{{SCRIPT_URI}}"></script>
+  </body>
+</html>

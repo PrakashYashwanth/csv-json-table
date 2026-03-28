@@ -31,12 +31,21 @@
     }
   },
   "scripts": {
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "compile": "npm run compile:ext && npm run compile:webview",
+    "compile:ext": "tsc -p ./",
+    "compile:webview": "esbuild src/webview/main.ts --bundle --outfile=media/webview.js --platform=browser --format=esm",
+    "watch": "tsc -watch -p ./",
+    "watch:webview": "esbuild src/webview/main.ts --bundle --outfile=media/webview.js --platform=browser --format=esm --watch",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
+    "@types/papaparse": "^5.3.14",
     "@types/vscode": "^1.80.0",
+    "esbuild": "^0.25.0",
     "typescript": "^5.3.3"
   }
 }

@@ -1,0 +1,403 @@
+/* CSV table view — aligned with VS Code list / editor feel */
+
+body {
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#title {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vscode-sideBarTitle-foreground);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-sideBar-background);
+}
+
+#tableRoot {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Header + filter share horizontal position with #bodyScroll (synced in VirtualTable). */
+#headerHost {
+  flex: 0 0 auto;
+  z-index: 6;
+  background: var(--vscode-editor-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--vscode-widget-shadow) 25%, transparent);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#headerHost::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+#bodyScroll {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: var(--vscode-editor-background);
+}
+
+#bodyScroll:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.cvt-hint {
+  margin: 0;
+  padding: 4px 14px 6px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--vscode-descriptionForeground);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-sideBar-background);
+}
+
+#virtualInner {
+  position: relative;
+  min-height: 100%;
+}
+
+#virtTable {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.cvt-header-table,
+.cvt-body-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+/* Not vertically sticky here — header block is fixed above the body scroller. */
+/* Scrolling columns stay under frozen sticky headers/cells */
+.cvt-header-table thead th.cvt-scroll-col,
+.cvt-header-table .filter-row td.cvt-scroll-col {
+  position: relative;
+  z-index: 1;
+}
+
+.cvt-header-table thead th.cvt-frozen,
+.cvt-header-table .filter-row td.cvt-frozen {
+  box-shadow:
+    1px 0 0 var(--vscode-panel-border),
+    6px 0 14px -3px color-mix(in srgb, var(--vscode-widget-shadow) 40%, transparent);
+}
+
+.cvt-body-table tbody td.cvt-scroll-col {
+  position: relative;
+  z-index: 1;
+}
+
+.cvt-body-table tbody td.cvt-frozen {
+  box-shadow:
+    1px 0 0 var(--vscode-panel-border),
+    6px 0 14px -3px color-mix(in srgb, var(--vscode-widget-shadow) 40%, transparent);
+}
+
+.cvt-header-table thead th {
+  background: var(
+    --vscode-sideBarSectionHeader-background,
+    var(--vscode-editorWidget-background)
+  );
+  color: var(
+    --vscode-sideBarSectionHeader-foreground,
+    var(--vscode-sideBarTitle-foreground)
+  );
+  border-bottom: 1px solid var(--vscode-panel-border);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cvt-header-table .filter-row td {
+  background: var(--vscode-editor-background);
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+th,
+td {
+  border-right: 1px solid var(--vscode-panel-border);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  padding: 0 10px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  box-sizing: border-box;
+  height: 28px;
+  line-height: 28px;
+}
+
+th:last-child,
+td:last-child {
+  border-right: none;
+}
+
+th {
+  white-space: nowrap;
+}
+
+td {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  white-space: nowrap;
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);
+}
+
+.cvt-body-table tbody tr:nth-child(even) td {
+  background: color-mix(
+    in srgb,
+    var(--vscode-editor-background) 94%,
+    var(--vscode-foreground) 6%
+  );
+}
+
+.col-drag-handle {
+  display: inline-block;
+  margin-right: 6px;
+  cursor: grab;
+  opacity: 0.55;
+  font-size: 10px;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+  letter-spacing: -2px;
+}
+
+.col-drag-handle:active {
+  cursor: grabbing;
+}
+
+.cvt-th-label {
+  user-select: none;
+}
+
+.cvt-header-table thead th.cvt-th {
+  padding: 0;
+  vertical-align: middle;
+}
+
+.cvt-th-inner {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  padding-left: 10px;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+
+.cvt-th-label-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cvt-th {
+  position: relative;
+  cursor: default;
+  user-select: none;
+}
+
+.cvt-th:hover {
+  background: color-mix(
+    in srgb,
+    var(--vscode-list-hoverBackground) 85%,
+    transparent
+  );
+}
+
+.col-menu-trigger {
+  flex: 0 0 auto;
+  margin: 0 0 0 6px;
+  padding: 0 2px;
+  width: 22px;
+  height: 22px;
+  line-height: 6px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--vscode-foreground);
+  background: transparent;
+  vertical-align: middle;
+  align-self: center;
+}
+
+.col-menu-trigger:hover {
+  background: color-mix(
+    in srgb,
+    var(--vscode-toolbar-hoverBackground) 80%,
+    transparent
+  );
+}
+
+.cvt-col-menu:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+}
+
+.cvt-col-menu {
+  z-index: 400;
+  padding: 4px 0;
+  min-width: 200px;
+  background: var(--vscode-menu-background);
+  color: var(--vscode-menu-foreground);
+  border: 1px solid var(--vscode-menu-border, var(--vscode-widget-border));
+  border-radius: 4px;
+  box-shadow: 0 4px 16px color-mix(in srgb, black 35%, transparent);
+}
+
+.cvt-col-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
+  border: none;
+  text-align: left;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-menu-foreground);
+  background: transparent;
+  cursor: pointer;
+}
+
+.cvt-col-menu-item:hover {
+  background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground));
+  color: var(--vscode-menu-selectionForeground, var(--vscode-menu-foreground));
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.resize-handle:hover {
+  background: var(--vscode-focusBorder);
+}
+
+.filter-input {
+  width: 100%;
+  height: 22px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--vscode-input-border);
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  box-sizing: border-box;
+}
+
+.filter-input:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.cvt-body-table tbody tr:hover td {
+  background: var(--vscode-list-hoverBackground) !important;
+}
+
+.cvt-body-table td.selected {
+  box-shadow: inset 0 0 0 2px var(--vscode-focusBorder);
+  background: var(--vscode-list-activeSelectionBackground) !important;
+  color: var(--vscode-list-activeSelectionForeground) !important;
+}
+
+input.cellEdit {
+  width: 100%;
+  height: 28px;
+  border: none;
+  padding: 0 10px;
+  margin: 0;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  box-sizing: border-box;
+}
+
+input.cellEdit:focus {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: -2px;
+}
+
+/* JSON modal — closer to a real editor surface */
+#editorOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: color-mix(in srgb, var(--vscode-editor-background) 40%, black);
+}
+
+#editorBox {
+  position: absolute;
+  top: 6%;
+  left: 6%;
+  width: 88%;
+  height: 86%;
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
+  box-shadow: 0 12px 48px color-mix(in srgb, black 45%, transparent);
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+#editorHeader {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-sideBar-background);
+  color: var(--vscode-sideBarTitle-foreground);
+}
+
+#monacoEditor {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Monaco fills the host; line number gutter visible */
+#monacoEditor .monaco-editor,
+#monacoEditor .monaco-editor .overflow-guard {
+  border-radius: 0;
+}
