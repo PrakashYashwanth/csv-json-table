@@ -68,6 +68,9 @@ export class TableViewModel {
   selectedRow = 0;
   selectedCol = 0;
 
+  /** Set of physical row indices that are checked for deletion */
+  readonly checkedRows = new Set<number>();
+
   private readonly undoStack: HistoryEntry[] = [];
   private readonly redoStack: HistoryEntry[] = [];
 
@@ -242,6 +245,7 @@ export class TableViewModel {
   initialize(csv: string): void {
     this.sortState = { column: null, direction: null };
     this.freezeCount = 0;
+    this.checkedRows.clear();
 
     const parsed = Papa.parse<string[]>(csv.trim(), { skipEmptyLines: false });
     const data = parsed.data;
@@ -414,5 +418,96 @@ export class TableViewModel {
       sum += this.columnWidths[d] ?? 0;
     }
     return sum;
+  }
+
+  /**
+   * Add a new empty row at the end of the table.
+   * @returns the index of the new row in the full rows array
+   */
+  addRow(): number {
+    const newRow = new Array(this.header.length).fill("");
+    this.rows.push(newRow);
+    this.rebuildIdentityMap();
+    this.pipeline();
+    // Select the new row, first column
+    this.selectedRow = this.filteredRows.length - 1;
+    this.selectedCol = 0;
+    return this.rows.length - 1;
+  }
+
+  /**
+   * Add a new row after the currently selected row.
+   * @returns the index of the new row in the full rows array
+   */
+  addRowAfterSelected(): number {
+    const real = this.realIndexForFilteredRow(this.selectedRow);
+    if (real === undefined) return this.addRow();
+    const newRow = new Array(this.header.length).fill("");
+    this.rows.splice(real + 1, 0, newRow);
+    this.rebuildIdentityMap();
+    this.pipeline();
+    this.selectedRow = Math.min(this.selectedRow + 1, this.filteredRows.length - 1);
+    return real + 1;
+  }
+
+  /**
+   * Toggle checkbox state for a row (filtered view index)
+   */
+  toggleRowCheck(filteredRowIndex: number): void {
+    const realIndex = this.realIndexForFilteredRow(filteredRowIndex);
+    if (realIndex !== undefined) {
+      if (this.checkedRows.has(realIndex)) {
+        this.checkedRows.delete(realIndex);
+      } else {
+        this.checkedRows.add(realIndex);
+      }
+    }
+    this.onChange?.();
+  }
+
+  /**
+   * Check if a row is checked (using filtered view index)
+   */
+  isRowChecked(filteredRowIndex: number): boolean {
+    const realIndex = this.realIndexForFilteredRow(filteredRowIndex);
+    return realIndex !== undefined && this.checkedRows.has(realIndex);
+  }
+
+  /**
+   * Delete all checked rows
+   * @returns true if any rows were deleted
+   */
+  deleteCheckedRows(): boolean {
+    if (this.checkedRows.size === 0) return false;
+    
+    // Sort indices in descending order so we delete from end to start
+    // (to avoid index shifting issues)
+    const indicesToDelete = Array.from(this.checkedRows).sort((a, b) => b - a);
+    
+    for (const idx of indicesToDelete) {
+      if (idx >= 0 && idx < this.rows.length) {
+        this.rows.splice(idx, 1);
+      }
+    }
+    
+    this.checkedRows.clear();
+    this.rebuildIdentityMap();
+    this.pipeline();
+    return true;
+  }
+
+  /**
+   * Get count of checked rows
+   */
+  getCheckedRowCount(): number {
+    return this.checkedRows.size;
+  }
+
+  /**
+   * Clear all checked rows
+   */
+  clearCheckedRows(): void {
+    this.checkedRows.clear();
+    this.onChange?.();
   }
 }

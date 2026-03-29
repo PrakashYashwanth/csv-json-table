@@ -18,6 +18,9 @@ export interface VirtualTableHandlers {
   onSortDescending: (displayCol: number) => void;
   onSortClear: () => void;
   onFilterCommit: (col: number, value: string) => void;
+  onAddRow: () => void;
+  onToggleRowCheck: (filteredRow: number) => void;
+  onDeleteRows: () => void;
   interactionLocked: () => boolean;
 }
 
@@ -107,6 +110,22 @@ export class VirtualTable {
       e.dataTransfer!.dropEffect = "move";
     });
     this.headerHost.addEventListener("drop", (e) => this.onHeaderDrop(e));
+
+    // Add row button handler
+    const addRowBtn = document.getElementById("addRowBtn");
+    if (addRowBtn) {
+      addRowBtn.addEventListener("click", () => {
+        this.handlers.onAddRow();
+      });
+    }
+
+    // Delete rows button handler
+    const deleteRowsBtn = document.getElementById("deleteRowsBtn");
+    if (deleteRowsBtn) {
+      deleteRowsBtn.addEventListener("click", () => {
+        this.handlers.onDeleteRows();
+      });
+    }
   }
 
   private closeColMenu(): void {
@@ -186,6 +205,8 @@ export class VirtualTable {
   private colgroupHtml(): string {
     const { columnWidths, displayOrder } = this.model;
     let html = "<colgroup>";
+    // Checkbox column
+    html += `<col style='width:36px;min-width:36px'>`;
     for (let d = 0; d < displayOrder.length; d++) {
       const w = columnWidths[d] ?? 120;
       html += `<col style='width:${w}px;min-width:${w}px'>`;
@@ -196,7 +217,8 @@ export class VirtualTable {
 
   private tableWidthStyle(): string {
     const sum = this.model.columnWidths.reduce((a, b) => a + b, 0);
-    return sum > 0 ? `width:${sum}px;min-width:${sum}px` : "";
+    const totalWithCheckbox = sum + 36; // Add checkbox column width
+    return totalWithCheckbox > 0 ? `width:${totalWithCheckbox}px;min-width:${totalWithCheckbox}px` : "";
   }
 
   private frozenCellStyle(
@@ -235,6 +257,8 @@ export class VirtualTable {
     let html = `<table class='cvt-header-table' style='${this.tableWidthStyle()}'>`;
     html += this.colgroupHtml();
     html += "<thead><tr>";
+    // Checkbox header
+    html += `<th class='cvt-checkbox-header' style='width:36px;min-width:36px'></th>`;
     for (let d = 0; d < n; d++) {
       const phys = displayOrder[d];
       const h = header[phys] ?? "";
@@ -245,7 +269,8 @@ export class VirtualTable {
       const fz = this.frozenCellStyle(d, "header", "label");
       const thClass =
         d < freezeCount ? "cvt-th cvt-frozen" : "cvt-th cvt-scroll-col";
-      html += `<th${fz} data-col='${d}' class='${thClass}'>`;
+      const rainbowCol = phys % 8;
+      html += `<th${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${thClass}'>`;
       html += `<div class='cvt-th-inner'>`;
       html += `<span class='col-drag-handle' draggable='true' data-col='${d}' title='Drag to reorder'>⠿</span>`;
       html += `<span class='cvt-th-label-cell'><span class='cvt-th-label'>${escapeHtml(h)}${escapeHtml(indicator)}</span></span>`;
@@ -254,15 +279,18 @@ export class VirtualTable {
       html += `<div class='resize-handle' data-col='${d}'></div></th>`;
     }
     html += "</tr><tr class='filter-row'>";
+    // Checkbox column in filter row
+    html += `<td class='cvt-checkbox-header' style='width:36px;min-width:36px'></td>`;
     for (let d = 0; d < n; d++) {
       const phys = displayOrder[d];
       const fz = this.frozenCellStyle(d, "header", "filter");
       const fClass = d < freezeCount ? "cvt-filter-td cvt-frozen" : "cvt-filter-td cvt-scroll-col";
+      const rainbowCol = phys % 8;
       if (jsonColumns.has(phys)) {
-        html += `<td${fz} data-col='${d}' class='${fClass}'></td>`;
+        html += `<td${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${fClass}'></td>`;
       } else {
         const val = filterByDisplay[d] ?? "";
-        html += `<td${fz} data-col='${d}' class='${fClass}'><input class='filter-input' data-col='${d}' value='${escapeHtml(val)}'></td>`;
+        html += `<td${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${fClass}'><input class='filter-input' data-col='${d}' value='${escapeHtml(val)}'></td>`;
       }
     }
     html += "</tr></thead></table>";
@@ -467,7 +495,10 @@ export class VirtualTable {
     for (let r = start; r < end; r++) {
       const row = this.model.filteredRows[r];
       if (!row) continue;
+      const isChecked = this.model.isRowChecked(r);
       bodyInner += "<tr>";
+      // Checkbox column
+      bodyInner += `<td class='cvt-checkbox-cell' data-row='${r}'><input type='checkbox' class='row-checkbox' data-row='${r}' ${isChecked ? "checked" : ""}></td>`;
       for (let d = 0; d < displayOrder.length; d++) {
         const phys = displayOrder[d];
         const cell = row[phys] ?? "";
@@ -479,13 +510,23 @@ export class VirtualTable {
         const fr = d < freezeCount ? "cvt-frozen" : "cvt-scroll-col";
         const tab = isSel ? "0" : "-1";
         const fz = this.frozenCellStyle(d, "body");
+        const rainbowCol = phys % 8;
         const cls = [sel, fr].filter(Boolean).join(" ");
-        bodyInner += `<td class='${cls}'${fz} data-row='${r}' data-col='${d}' tabindex='${tab}'>${escapeHtml(display)}</td>`;
+        bodyInner += `<td class='${cls}'${fz} data-row='${r}' data-col='${d}' data-rainbow-col='${rainbowCol}' tabindex='${tab}'>${escapeHtml(display)}</td>`;
       }
       bodyInner += "</tr>";
     }
     bodyInner += "</tbody></table>";
     this.virtTableWrap.innerHTML = bodyInner;
+
+    // Attach checkbox handlers
+    this.virtTableWrap.querySelectorAll(".row-checkbox").forEach((checkbox) => {
+      (checkbox as HTMLInputElement).addEventListener("change", (e) => {
+        const r = parseInt((e.target as HTMLElement).dataset.row ?? "0", 10);
+        console.log('[VirtualTable] Checkbox toggled for row:', r, 'Checked:', (e.target as HTMLInputElement).checked);
+        this.handlers.onToggleRowCheck(r);
+      });
+    });
   }
 
   private onBodyClick(e: MouseEvent): void {

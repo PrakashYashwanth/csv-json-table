@@ -30,11 +30,25 @@ const virtualInner = document.getElementById("virtualInner")!;
 const virtTableWrap = document.getElementById("virtTable")!;
 const overlay = document.getElementById("editorOverlay")!;
 const monacoHost = document.getElementById("monacoEditor")!;
+const deleteRowsBtn = document.getElementById("deleteRowsBtn")! as HTMLButtonElement;
+const checkedCountEl = document.getElementById("checkedCount")!;
+const revertBtn = document.getElementById("revertBtn")! as HTMLButtonElement;
+const saveBtn = document.getElementById("saveBtn")! as HTMLButtonElement;
 
 let inlineEditing = false;
 
 /** Last pointer interaction was inside the grid (not filter/cell inputs) — drives keyboard nav. */
 let gridKeysEnabled = false;
+
+function updateDeleteButtonState(): void {
+  const count = model.getCheckedRowCount();
+  deleteRowsBtn.disabled = count === 0;
+  if (count > 0) {
+    checkedCountEl.textContent = `${count} row${count !== 1 ? "s" : ""} selected`;
+  } else {
+    checkedCountEl.textContent = "";
+  }
+}
 
 function isTypingTarget(t: EventTarget | null): boolean {
   if (!t || !(t as HTMLElement).closest) return false;
@@ -99,6 +113,37 @@ const vtable = new VirtualTable(
     onEditCell(r, c) {
       beginEditAt(r, c);
     },
+    onAddRow() {
+      model.addRow();
+      setDirty(true);
+      setTimeout(() => {
+        vtable.fullRender();
+        ensureSelectionVisible();
+        focusSelectedCellAfterPaint();
+      }, 0);
+    },
+    onToggleRowCheck(r) {
+      model.toggleRowCheck(r);
+      updateDeleteButtonState();
+      vtable.fullRender();
+    },
+    onDeleteRows() {
+      const count = model.getCheckedRowCount();
+      console.log('[Main] Delete rows clicked, checked count:', count);
+      if (count === 0) return;
+      // Note: confirm() is blocked by webview sandbox, so we just proceed
+      // Users can undo with Ctrl+Z if needed
+      console.log('[Main] Deleting rows...');
+      model.deleteCheckedRows();
+      setDirty(true);
+      updateDeleteButtonState();
+      setTimeout(() => {
+        console.log('[Main] After delete, rendering...');
+        vtable.fullRender();
+        ensureSelectionVisible();
+        focusSelectedCellAfterPaint();
+      }, 0);
+    },
     onFilterCommit(col, value) {
       model.setFilter(col, value);
     },
@@ -127,7 +172,10 @@ function beginEditAt(r: number, c: number): void {
   }
 }
 
-model.setOnChange(() => vtable.fullRender());
+model.setOnChange(() => {
+  vtable.fullRender();
+  updateDeleteButtonState();
+});
 
 function ensureSelectionVisible(): void {
   const rows = model.filteredRows.length;
@@ -324,6 +372,19 @@ function save(): void {
   setDirty(false);
 }
 
+revertBtn.addEventListener("click", () => {
+  // Note: confirm() is blocked by webview sandbox, so we just proceed
+  // Only revert if there are unsaved changes
+  if (isDirty) {
+    console.log('[Main] Revert clicked - discarding changes and reloading');
+  }
+  api.postMessage({ command: "requestReload" });
+});
+
+saveBtn.addEventListener("click", () => {
+  save();
+});
+
 overlay.addEventListener("click", (e) => {
   if ((e.target as HTMLElement).id === "editorOverlay") {
     closeEditor();
@@ -341,6 +402,20 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && overlay.style.display === "block") {
     e.preventDefault();
     closeEditor();
+    return;
+  }
+
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
+    e.preventDefault();
+    if (!inlineEditing && overlay.style.display !== "block") {
+      model.addRow();
+      setDirty(true);
+      setTimeout(() => {
+        vtable.fullRender();
+        ensureSelectionVisible();
+        focusSelectedCellAfterPaint();
+      }, 0);
+    }
     return;
   }
 

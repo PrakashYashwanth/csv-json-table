@@ -401,3 +401,139 @@ input.cellEdit:focus {
 #monacoEditor .monaco-editor .overflow-guard {
   border-radius: 0;
 }
+
+/* Table footer — add row button */
+#tableFooter {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border-top: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-sideBar-background);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#addRowBtn,
+#deleteRowsBtn,
+#revertBtn,
+#saveBtn {
+  padding: 6px 12px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 3px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+#addRowBtn:hover,
+#deleteRowsBtn:hover:not(:disabled),
+#revertBtn:hover,
+#saveBtn:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+#addRowBtn:active,
+#deleteRowsBtn:active:not(:disabled),
+#revertBtn:active,
+#saveBtn:active {
+  opacity: 0.8;
+}
+
+#deleteRowsBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#checkedCount {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  font-weight: 500;
+}
+
+/* Push save/revert buttons to the right */
+#revertBtn,
+#saveBtn {
+  margin-left: auto;
+}
+
+/* Checkbox column styling */
+.cvt-checkbox-header {
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  padding: 0 6px !important;
+  text-align: center;
+  background: var(
+    --vscode-sideBarSectionHeader-background,
+    var(--vscode-editorWidget-background)
+  );
+  color: var(
+    --vscode-sideBarSectionHeader-foreground,
+    var(--vscode-sideBarTitle-foreground)
+  );
+  border-bottom: 1px solid var(--vscode-panel-border);
+  border-right: 1px solid var(--vscode-panel-border);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cvt-checkbox-cell {
+  padding: 0 6px !important;
+  text-align: center;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  flex-shrink: 0;
+  background: var(--vscode-editor-background);
+  border-right: 1px solid var(--vscode-panel-border);
+}
+
+.row-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+  vertical-align: middle;
+  accent-color: var(--vscode-focusBorder);
+}
+
+.row-checkbox:hover {
+  opacity: 0.8;
+}
+
+.row-checkbox:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+
+/* Subtle column alternation for clarity — completely professional and minimal */
+.cvt-body-table tbody td[data-rainbow-col] {
+  background: var(--vscode-editor-background);
+}
+
+/* Subtle alternating column backgrounds using modulo 2 - even physical columns get slight shade */
+.cvt-body-table tbody td[data-rainbow-col="0"],
+.cvt-body-table tbody td[data-rainbow-col="2"],
+.cvt-body-table tbody td[data-rainbow-col="4"],
+.cvt-body-table tbody td[data-rainbow-col="6"] {
+  background: color-mix(in srgb, var(--vscode-editor-background) 98%, var(--vscode-foreground) 2%);
+}
+
+/* Even rows get slightly darker alternation to match VS Code's row striping */
+.cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="0"],
+.cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="2"],
+.cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="4"],
+.cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="6"] {
+  background: color-mix(in srgb, var(--vscode-editor-background) 96%, var(--vscode-foreground) 4%);
+}
+
+/* Hover and selection states */
+.cvt-body-table tbody tr:hover td[data-rainbow-col] {
+  background: var(--vscode-list-hoverBackground) !important;
+}

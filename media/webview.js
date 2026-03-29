@@ -296,6 +296,18 @@ var VirtualTable = class _VirtualTable {
       e.dataTransfer.dropEffect = "move";
     });
     this.headerHost.addEventListener("drop", (e) => this.onHeaderDrop(e));
+    const addRowBtn = document.getElementById("addRowBtn");
+    if (addRowBtn) {
+      addRowBtn.addEventListener("click", () => {
+        this.handlers.onAddRow();
+      });
+    }
+    const deleteRowsBtn2 = document.getElementById("deleteRowsBtn");
+    if (deleteRowsBtn2) {
+      deleteRowsBtn2.addEventListener("click", () => {
+        this.handlers.onDeleteRows();
+      });
+    }
   }
   static {
     this.DOUBLE_CLICK_MS = 450;
@@ -369,6 +381,7 @@ var VirtualTable = class _VirtualTable {
   colgroupHtml() {
     const { columnWidths, displayOrder } = this.model;
     let html = "<colgroup>";
+    html += `<col style='width:36px;min-width:36px'>`;
     for (let d = 0; d < displayOrder.length; d++) {
       const w = columnWidths[d] ?? 120;
       html += `<col style='width:${w}px;min-width:${w}px'>`;
@@ -378,7 +391,8 @@ var VirtualTable = class _VirtualTable {
   }
   tableWidthStyle() {
     const sum = this.model.columnWidths.reduce((a, b) => a + b, 0);
-    return sum > 0 ? `width:${sum}px;min-width:${sum}px` : "";
+    const totalWithCheckbox = sum + 36;
+    return totalWithCheckbox > 0 ? `width:${totalWithCheckbox}px;min-width:${totalWithCheckbox}px` : "";
   }
   frozenCellStyle(displayCol, layer, headerRow = "label") {
     const { freezeCount, columnWidths } = this.model;
@@ -410,6 +424,7 @@ var VirtualTable = class _VirtualTable {
     let html = `<table class='cvt-header-table' style='${this.tableWidthStyle()}'>`;
     html += this.colgroupHtml();
     html += "<thead><tr>";
+    html += `<th class='cvt-checkbox-header' style='width:36px;min-width:36px'></th>`;
     for (let d = 0; d < n; d++) {
       const phys = displayOrder[d];
       const h = header[phys] ?? "";
@@ -419,7 +434,8 @@ var VirtualTable = class _VirtualTable {
       }
       const fz = this.frozenCellStyle(d, "header", "label");
       const thClass = d < freezeCount ? "cvt-th cvt-frozen" : "cvt-th cvt-scroll-col";
-      html += `<th${fz} data-col='${d}' class='${thClass}'>`;
+      const rainbowCol = phys % 8;
+      html += `<th${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${thClass}'>`;
       html += `<div class='cvt-th-inner'>`;
       html += `<span class='col-drag-handle' draggable='true' data-col='${d}' title='Drag to reorder'>\u283F</span>`;
       html += `<span class='cvt-th-label-cell'><span class='cvt-th-label'>${escapeHtml(h)}${escapeHtml(indicator)}</span></span>`;
@@ -428,15 +444,17 @@ var VirtualTable = class _VirtualTable {
       html += `<div class='resize-handle' data-col='${d}'></div></th>`;
     }
     html += "</tr><tr class='filter-row'>";
+    html += `<td class='cvt-checkbox-header' style='width:36px;min-width:36px'></td>`;
     for (let d = 0; d < n; d++) {
       const phys = displayOrder[d];
       const fz = this.frozenCellStyle(d, "header", "filter");
       const fClass = d < freezeCount ? "cvt-filter-td cvt-frozen" : "cvt-filter-td cvt-scroll-col";
+      const rainbowCol = phys % 8;
       if (jsonColumns.has(phys)) {
-        html += `<td${fz} data-col='${d}' class='${fClass}'></td>`;
+        html += `<td${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${fClass}'></td>`;
       } else {
         const val = filterByDisplay[d] ?? "";
-        html += `<td${fz} data-col='${d}' class='${fClass}'><input class='filter-input' data-col='${d}' value='${escapeHtml(val)}'></td>`;
+        html += `<td${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${fClass}'><input class='filter-input' data-col='${d}' value='${escapeHtml(val)}'></td>`;
       }
     }
     html += "</tr></thead></table>";
@@ -620,7 +638,9 @@ var VirtualTable = class _VirtualTable {
     for (let r = start; r < end; r++) {
       const row = this.model.filteredRows[r];
       if (!row) continue;
+      const isChecked = this.model.isRowChecked(r);
       bodyInner += "<tr>";
+      bodyInner += `<td class='cvt-checkbox-cell' data-row='${r}'><input type='checkbox' class='row-checkbox' data-row='${r}' ${isChecked ? "checked" : ""}></td>`;
       for (let d = 0; d < displayOrder.length; d++) {
         const phys = displayOrder[d];
         const cell = row[phys] ?? "";
@@ -630,13 +650,21 @@ var VirtualTable = class _VirtualTable {
         const fr = d < freezeCount ? "cvt-frozen" : "cvt-scroll-col";
         const tab = isSel ? "0" : "-1";
         const fz = this.frozenCellStyle(d, "body");
+        const rainbowCol = phys % 8;
         const cls = [sel, fr].filter(Boolean).join(" ");
-        bodyInner += `<td class='${cls}'${fz} data-row='${r}' data-col='${d}' tabindex='${tab}'>${escapeHtml(display)}</td>`;
+        bodyInner += `<td class='${cls}'${fz} data-row='${r}' data-col='${d}' data-rainbow-col='${rainbowCol}' tabindex='${tab}'>${escapeHtml(display)}</td>`;
       }
       bodyInner += "</tr>";
     }
     bodyInner += "</tbody></table>";
     this.virtTableWrap.innerHTML = bodyInner;
+    this.virtTableWrap.querySelectorAll(".row-checkbox").forEach((checkbox) => {
+      checkbox.addEventListener("change", (e) => {
+        const r = parseInt(e.target.dataset.row ?? "0", 10);
+        console.log("[VirtualTable] Checkbox toggled for row:", r, "Checked:", e.target.checked);
+        this.handlers.onToggleRowCheck(r);
+      });
+    });
   }
   onBodyClick(e) {
     if (this.handlers.interactionLocked()) return;
@@ -829,6 +857,8 @@ var TableViewModel = class {
     this.rowIdentityMap = /* @__PURE__ */ new Map();
     this.selectedRow = 0;
     this.selectedCol = 0;
+    /** Set of physical row indices that are checked for deletion */
+    this.checkedRows = /* @__PURE__ */ new Set();
     this.undoStack = [];
     this.redoStack = [];
   }
@@ -974,6 +1004,7 @@ var TableViewModel = class {
   initialize(csv) {
     this.sortState = { column: null, direction: null };
     this.freezeCount = 0;
+    this.checkedRows.clear();
     const parsed = Papa.parse(csv.trim(), { skipEmptyLines: false });
     const data = parsed.data;
     if (data.length === 0) {
@@ -1127,6 +1158,84 @@ var TableViewModel = class {
     }
     return sum;
   }
+  /**
+   * Add a new empty row at the end of the table.
+   * @returns the index of the new row in the full rows array
+   */
+  addRow() {
+    const newRow = new Array(this.header.length).fill("");
+    this.rows.push(newRow);
+    this.rebuildIdentityMap();
+    this.pipeline();
+    this.selectedRow = this.filteredRows.length - 1;
+    this.selectedCol = 0;
+    return this.rows.length - 1;
+  }
+  /**
+   * Add a new row after the currently selected row.
+   * @returns the index of the new row in the full rows array
+   */
+  addRowAfterSelected() {
+    const real = this.realIndexForFilteredRow(this.selectedRow);
+    if (real === void 0) return this.addRow();
+    const newRow = new Array(this.header.length).fill("");
+    this.rows.splice(real + 1, 0, newRow);
+    this.rebuildIdentityMap();
+    this.pipeline();
+    this.selectedRow = Math.min(this.selectedRow + 1, this.filteredRows.length - 1);
+    return real + 1;
+  }
+  /**
+   * Toggle checkbox state for a row (filtered view index)
+   */
+  toggleRowCheck(filteredRowIndex) {
+    const realIndex = this.realIndexForFilteredRow(filteredRowIndex);
+    if (realIndex !== void 0) {
+      if (this.checkedRows.has(realIndex)) {
+        this.checkedRows.delete(realIndex);
+      } else {
+        this.checkedRows.add(realIndex);
+      }
+    }
+    this.onChange?.();
+  }
+  /**
+   * Check if a row is checked (using filtered view index)
+   */
+  isRowChecked(filteredRowIndex) {
+    const realIndex = this.realIndexForFilteredRow(filteredRowIndex);
+    return realIndex !== void 0 && this.checkedRows.has(realIndex);
+  }
+  /**
+   * Delete all checked rows
+   * @returns true if any rows were deleted
+   */
+  deleteCheckedRows() {
+    if (this.checkedRows.size === 0) return false;
+    const indicesToDelete = Array.from(this.checkedRows).sort((a, b) => b - a);
+    for (const idx of indicesToDelete) {
+      if (idx >= 0 && idx < this.rows.length) {
+        this.rows.splice(idx, 1);
+      }
+    }
+    this.checkedRows.clear();
+    this.rebuildIdentityMap();
+    this.pipeline();
+    return true;
+  }
+  /**
+   * Get count of checked rows
+   */
+  getCheckedRowCount() {
+    return this.checkedRows.size;
+  }
+  /**
+   * Clear all checked rows
+   */
+  clearCheckedRows() {
+    this.checkedRows.clear();
+    this.onChange?.();
+  }
 };
 
 // src/webview/main.ts
@@ -1149,8 +1258,21 @@ var virtualInner = document.getElementById("virtualInner");
 var virtTableWrap = document.getElementById("virtTable");
 var overlay = document.getElementById("editorOverlay");
 var monacoHost = document.getElementById("monacoEditor");
+var deleteRowsBtn = document.getElementById("deleteRowsBtn");
+var checkedCountEl = document.getElementById("checkedCount");
+var revertBtn = document.getElementById("revertBtn");
+var saveBtn = document.getElementById("saveBtn");
 var inlineEditing = false;
 var gridKeysEnabled = false;
+function updateDeleteButtonState() {
+  const count = model.getCheckedRowCount();
+  deleteRowsBtn.disabled = count === 0;
+  if (count > 0) {
+    checkedCountEl.textContent = `${count} row${count !== 1 ? "s" : ""} selected`;
+  } else {
+    checkedCountEl.textContent = "";
+  }
+}
 function isTypingTarget(t) {
   if (!t || !t.closest) return false;
   const el = t;
@@ -1210,6 +1332,35 @@ var vtable = new VirtualTable(
     onEditCell(r, c) {
       beginEditAt(r, c);
     },
+    onAddRow() {
+      model.addRow();
+      setDirty(true);
+      setTimeout(() => {
+        vtable.fullRender();
+        ensureSelectionVisible();
+        focusSelectedCellAfterPaint();
+      }, 0);
+    },
+    onToggleRowCheck(r) {
+      model.toggleRowCheck(r);
+      updateDeleteButtonState();
+      vtable.fullRender();
+    },
+    onDeleteRows() {
+      const count = model.getCheckedRowCount();
+      console.log("[Main] Delete rows clicked, checked count:", count);
+      if (count === 0) return;
+      console.log("[Main] Deleting rows...");
+      model.deleteCheckedRows();
+      setDirty(true);
+      updateDeleteButtonState();
+      setTimeout(() => {
+        console.log("[Main] After delete, rendering...");
+        vtable.fullRender();
+        ensureSelectionVisible();
+        focusSelectedCellAfterPaint();
+      }, 0);
+    },
     onFilterCommit(col, value) {
       model.setFilter(col, value);
     },
@@ -1236,7 +1387,10 @@ function beginEditAt(r, c) {
     setTimeout(() => inlineEdit(r, c), 0);
   }
 }
-model.setOnChange(() => vtable.fullRender());
+model.setOnChange(() => {
+  vtable.fullRender();
+  updateDeleteButtonState();
+});
 function ensureSelectionVisible() {
   const rows = model.filteredRows.length;
   const cols = model.displayOrder.length;
@@ -1405,6 +1559,15 @@ function save() {
   baselineCsv = newCsv;
   setDirty(false);
 }
+revertBtn.addEventListener("click", () => {
+  if (isDirty) {
+    console.log("[Main] Revert clicked - discarding changes and reloading");
+  }
+  api.postMessage({ command: "requestReload" });
+});
+saveBtn.addEventListener("click", () => {
+  save();
+});
 overlay.addEventListener("click", (e) => {
   if (e.target.id === "editorOverlay") {
     closeEditor();
@@ -1420,6 +1583,19 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && overlay.style.display === "block") {
     e.preventDefault();
     closeEditor();
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
+    e.preventDefault();
+    if (!inlineEditing && overlay.style.display !== "block") {
+      model.addRow();
+      setDirty(true);
+      setTimeout(() => {
+        vtable.fullRender();
+        ensureSelectionVisible();
+        focusSelectedCellAfterPaint();
+      }, 0);
+    }
     return;
   }
   if ((e.metaKey || e.ctrlKey) && e.key === "z") {
