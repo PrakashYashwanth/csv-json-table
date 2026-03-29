@@ -109,3 +109,27 @@ this extension turns them into something actually usable.
 ---
 
 **Stop switching tools. Edit smarter, directly in VS Code.**
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+MIT © 2024 M S S Prakash Yashwanth
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues and pull requests on [GitHub](https://github.com/PrakashYashwanth/csv-json-table).
+
+---
+
+## 🐛 Support & Issues
+
+Found a bug or have a feature request? [Open an issue](https://github.com/PrakashYashwanth/csv-json-table/issues) on GitHub.
+
+---
+
+**Made with ❤️ for developers**

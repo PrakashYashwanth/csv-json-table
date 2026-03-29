@@ -1,13 +1,35 @@
 {
   "name": "csv-json-table",
   "displayName": "CSV JSON Table",
-  "description": "CSV table view with JSON cell editing",
+  "description": "Fast CSV editor with built-in JSON intelligence — perfect for developers handling structured data",
   "version": "0.0.1",
+  "publisher": "mssprakashyashwanth",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PrakashYashwanth/csv-json-table.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PrakashYashwanth/csv-json-table/issues"
+  },
+  "homepage": "https://github.com/PrakashYashwanth/csv-json-table#readme",
+  "icon": "./media/icon.svg",
+  "keywords": [
+    "csv",
+    "json",
+    "table",
+    "editor",
+    "spreadsheet",
+    "data",
+    "config",
+    "viewer"
+  ],
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
-    "Other"
+    "Data & Analytics",
+    "Visualization"
   ],
   "activationEvents": [
     "onCommand:csvJsonTable.open"
