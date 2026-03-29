@@ -1,6 +1,6 @@
 {
   "name": "csv-json-table",
-  "displayName": "CSV JSON Table",
+  "displayName": "CSV Config Table",
   "description": "Fast CSV editor with built-in JSON intelligence — perfect for developers handling structured data",
   "version": "0.1.0",
   "publisher": "mssprakashyashwanth",
