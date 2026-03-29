@@ -2,7 +2,7 @@
   "name": "csv-json-table",
   "displayName": "CSV Config Table",
   "description": "Fast CSV editor with built-in JSON intelligence — perfect for developers handling structured data",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "mssprakashyashwanth",
   "license": "MIT",
   "repository": {

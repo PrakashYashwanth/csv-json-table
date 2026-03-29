@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-file workspace support
 - Custom theming options
 
+## [0.1.1] - 2026-03-29
+
+### Changed
+
+- Updated display name to "CSV Config Table" for better clarity
+
 ## [0.1.0] - 2026-03-29
 
 ### Added
