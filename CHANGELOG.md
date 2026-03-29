@@ -7,16 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- Initial release of CSV JSON Table extension
-- Fast & virtualized table rendering for large CSV files
-- JSON-aware cell editing with Monaco editor
-- Spreadsheet-like editing experience
-- File sync and persistence
-- Undo / Redo support
-- Context menu integration with CSV files
-
 ### Planned
 
 - JSON schema validation per column
@@ -27,7 +17,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-file workspace support
 - Custom theming options
 
-## [0.0.1] - 2024-03-29
+## [0.1.0] - 2026-03-29
+
+### Added
+
+- **Row Addition**: Add new rows via button or Ctrl+N keyboard shortcut
+- **Multi-row Selection**: Checkbox column for selecting multiple rows at once
+- **Batch Deletion**: Delete selected rows with delete button; supports Ctrl+Z undo
+- **File Control**: Save button for explicit file persistence and Revert button to reload from disk
+- **Visual Improvements**: Subtle column alternation styling for better readability (no extension dependency required)
+- **Enhanced Footer**: Action buttons for add row, delete selected, save, and revert operations
+
+## [0.0.1] - 2026-03-29
+
+### Added
+
+- Initial release of CSV JSON Table extension
+- Fast & virtualized table rendering for large CSV files
+- JSON-aware cell editing with Monaco editor
+- Spreadsheet-like editing experience
+- File sync and persistence
+- Undo / Redo support
+- Context menu integration with CSV files
 
 ### Added
 

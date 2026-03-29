@@ -12,7 +12,10 @@ type PapaParseResult = {
 };
 
 type PapaParse = {
-  parse<T>(input: string, config?: { skipEmptyLines?: boolean }): PapaParseResult;
+  parse<T>(
+    input: string,
+    config?: { skipEmptyLines?: boolean },
+  ): PapaParseResult;
   unparse(data: unknown[][]): string;
 };
 
@@ -33,11 +36,7 @@ function isValidDisplayOrderPermutation(order: number[], n: number): boolean {
   return seen.size === n;
 }
 
-function mapIndexAfterColumnMove(
-  i: number,
-  from: number,
-  to: number,
-): number {
+function mapIndexAfterColumnMove(i: number, from: number, to: number): number {
   if (i === from) return to;
   if (from < to) {
     if (i > from && i <= to) return i - 1;
@@ -446,7 +445,10 @@ export class TableViewModel {
     this.rows.splice(real + 1, 0, newRow);
     this.rebuildIdentityMap();
     this.pipeline();
-    this.selectedRow = Math.min(this.selectedRow + 1, this.filteredRows.length - 1);
+    this.selectedRow = Math.min(
+      this.selectedRow + 1,
+      this.filteredRows.length - 1,
+    );
     return real + 1;
   }
 
@@ -479,17 +481,17 @@ export class TableViewModel {
    */
   deleteCheckedRows(): boolean {
     if (this.checkedRows.size === 0) return false;
-    
+
     // Sort indices in descending order so we delete from end to start
     // (to avoid index shifting issues)
     const indicesToDelete = Array.from(this.checkedRows).sort((a, b) => b - a);
-    
+
     for (const idx of indicesToDelete) {
       if (idx >= 0 && idx < this.rows.length) {
         this.rows.splice(idx, 1);
       }
     }
-    
+
     this.checkedRows.clear();
     this.rebuildIdentityMap();
     this.pipeline();

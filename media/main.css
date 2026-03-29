@@ -38,7 +38,8 @@ body {
   z-index: 6;
   background: var(--vscode-editor-background);
   border-bottom: 1px solid var(--vscode-panel-border);
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--vscode-widget-shadow) 25%, transparent);
+  box-shadow: 0 1px 0
+    color-mix(in srgb, var(--vscode-widget-shadow) 25%, transparent);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -102,7 +103,8 @@ body {
 .cvt-header-table .filter-row td.cvt-frozen {
   box-shadow:
     1px 0 0 var(--vscode-panel-border),
-    6px 0 14px -3px color-mix(in srgb, var(--vscode-widget-shadow) 40%, transparent);
+    6px 0 14px -3px
+      color-mix(in srgb, var(--vscode-widget-shadow) 40%, transparent);
 }
 
 .cvt-body-table tbody td.cvt-scroll-col {
@@ -113,7 +115,8 @@ body {
 .cvt-body-table tbody td.cvt-frozen {
   box-shadow:
     1px 0 0 var(--vscode-panel-border),
-    6px 0 14px -3px color-mix(in srgb, var(--vscode-widget-shadow) 40%, transparent);
+    6px 0 14px -3px
+      color-mix(in srgb, var(--vscode-widget-shadow) 40%, transparent);
 }
 
 .cvt-header-table thead th {
@@ -291,7 +294,10 @@ td {
 }
 
 .cvt-col-menu-item:hover {
-  background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground));
+  background: var(
+    --vscode-menu-selectionBackground,
+    var(--vscode-list-hoverBackground)
+  );
   color: var(--vscode-menu-selectionForeground, var(--vscode-menu-foreground));
 }
 
@@ -522,7 +528,11 @@ input.cellEdit:focus {
 .cvt-body-table tbody td[data-rainbow-col="2"],
 .cvt-body-table tbody td[data-rainbow-col="4"],
 .cvt-body-table tbody td[data-rainbow-col="6"] {
-  background: color-mix(in srgb, var(--vscode-editor-background) 98%, var(--vscode-foreground) 2%);
+  background: color-mix(
+    in srgb,
+    var(--vscode-editor-background) 98%,
+    var(--vscode-foreground) 2%
+  );
 }
 
 /* Even rows get slightly darker alternation to match VS Code's row striping */
@@ -530,7 +540,11 @@ input.cellEdit:focus {
 .cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="2"],
 .cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="4"],
 .cvt-body-table tbody tr:nth-child(even) td[data-rainbow-col="6"] {
-  background: color-mix(in srgb, var(--vscode-editor-background) 96%, var(--vscode-foreground) 4%);
+  background: color-mix(
+    in srgb,
+    var(--vscode-editor-background) 96%,
+    var(--vscode-foreground) 4%
+  );
 }
 
 /* Hover and selection states */

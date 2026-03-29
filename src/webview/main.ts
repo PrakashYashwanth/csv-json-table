@@ -14,7 +14,7 @@ let isDirty = false;
 
 function setDirty(val: boolean): void {
   if (isDirty === val) return;
-  console.log('[Webview] setDirty:', val);
+  console.log("[Webview] setDirty:", val);
   isDirty = val;
   api.postMessage({ command: "dirty", isDirty });
 }
@@ -30,7 +30,9 @@ const virtualInner = document.getElementById("virtualInner")!;
 const virtTableWrap = document.getElementById("virtTable")!;
 const overlay = document.getElementById("editorOverlay")!;
 const monacoHost = document.getElementById("monacoEditor")!;
-const deleteRowsBtn = document.getElementById("deleteRowsBtn")! as HTMLButtonElement;
+const deleteRowsBtn = document.getElementById(
+  "deleteRowsBtn",
+)! as HTMLButtonElement;
 const checkedCountEl = document.getElementById("checkedCount")!;
 const revertBtn = document.getElementById("revertBtn")! as HTMLButtonElement;
 const saveBtn = document.getElementById("saveBtn")! as HTMLButtonElement;
@@ -129,16 +131,16 @@ const vtable = new VirtualTable(
     },
     onDeleteRows() {
       const count = model.getCheckedRowCount();
-      console.log('[Main] Delete rows clicked, checked count:', count);
+      console.log("[Main] Delete rows clicked, checked count:", count);
       if (count === 0) return;
       // Note: confirm() is blocked by webview sandbox, so we just proceed
       // Users can undo with Ctrl+Z if needed
-      console.log('[Main] Deleting rows...');
+      console.log("[Main] Deleting rows...");
       model.deleteCheckedRows();
       setDirty(true);
       updateDeleteButtonState();
       setTimeout(() => {
-        console.log('[Main] After delete, rendering...');
+        console.log("[Main] After delete, rendering...");
         vtable.fullRender();
         ensureSelectionVisible();
         focusSelectedCellAfterPaint();
@@ -269,7 +271,7 @@ document.addEventListener(
 );
 
 function initialize(csv: string): void {
-  console.log('[Webview] initialize called, csv length:', csv.length);
+  console.log("[Webview] initialize called, csv length:", csv.length);
   baselineCsv = csv;
   model.initialize(csv);
   // Don't call setDirty here - let the caller manage dirty state
@@ -376,7 +378,7 @@ revertBtn.addEventListener("click", () => {
   // Note: confirm() is blocked by webview sandbox, so we just proceed
   // Only revert if there are unsaved changes
   if (isDirty) {
-    console.log('[Main] Revert clicked - discarding changes and reloading');
+    console.log("[Main] Revert clicked - discarding changes and reloading");
   }
   api.postMessage({ command: "requestReload" });
 });
@@ -464,7 +466,9 @@ window.addEventListener("message", (event) => {
     // leaving webview dirty while host was clean (setDirty(true) then no-oped forever).
     const skipConfirm = msg.skipDirtyConfirm === true;
     if (isDirty && msg.data !== baselineCsv && !skipConfirm) {
-      console.log("[Webview] Dirty + external data differs — asking user (legacy path)");
+      console.log(
+        "[Webview] Dirty + external data differs — asking user (legacy path)",
+      );
       const shouldReload = confirm(
         "The file changed on disk. Reload and discard your table edits?",
       );

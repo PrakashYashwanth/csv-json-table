@@ -218,7 +218,9 @@ export class VirtualTable {
   private tableWidthStyle(): string {
     const sum = this.model.columnWidths.reduce((a, b) => a + b, 0);
     const totalWithCheckbox = sum + 36; // Add checkbox column width
-    return totalWithCheckbox > 0 ? `width:${totalWithCheckbox}px;min-width:${totalWithCheckbox}px` : "";
+    return totalWithCheckbox > 0
+      ? `width:${totalWithCheckbox}px;min-width:${totalWithCheckbox}px`
+      : "";
   }
 
   private frozenCellStyle(
@@ -284,7 +286,10 @@ export class VirtualTable {
     for (let d = 0; d < n; d++) {
       const phys = displayOrder[d];
       const fz = this.frozenCellStyle(d, "header", "filter");
-      const fClass = d < freezeCount ? "cvt-filter-td cvt-frozen" : "cvt-filter-td cvt-scroll-col";
+      const fClass =
+        d < freezeCount
+          ? "cvt-filter-td cvt-frozen"
+          : "cvt-filter-td cvt-scroll-col";
       const rainbowCol = phys % 8;
       if (jsonColumns.has(phys)) {
         html += `<td${fz} data-col='${d}' data-rainbow-col='${rainbowCol}' class='${fClass}'></td>`;
@@ -410,8 +415,7 @@ export class VirtualTable {
         for (let i = 0; i < displayCol; i++) left += w[i] ?? 0;
         const inHeader = !!el.closest(".cvt-header-table");
         const inBody = !!el.closest(".cvt-body-table");
-        const isFilterTd =
-          el.tagName === "TD" && !!el.closest(".filter-row");
+        const isFilterTd = el.tagName === "TD" && !!el.closest(".filter-row");
         el.style.position = "sticky";
         el.style.left = `${left}px`;
         el.style.zIndex = String(inHeader ? 52 + displayCol : 42 + displayCol);
@@ -523,7 +527,12 @@ export class VirtualTable {
     this.virtTableWrap.querySelectorAll(".row-checkbox").forEach((checkbox) => {
       (checkbox as HTMLInputElement).addEventListener("change", (e) => {
         const r = parseInt((e.target as HTMLElement).dataset.row ?? "0", 10);
-        console.log('[VirtualTable] Checkbox toggled for row:', r, 'Checked:', (e.target as HTMLInputElement).checked);
+        console.log(
+          "[VirtualTable] Checkbox toggled for row:",
+          r,
+          "Checked:",
+          (e.target as HTMLInputElement).checked,
+        );
         this.handlers.onToggleRowCheck(r);
       });
     });
@@ -570,14 +579,16 @@ export class VirtualTable {
   refreshSelection(): void {
     const sr = this.model.selectedRow;
     const sc = this.model.selectedCol;
-    this.virtTableWrap.querySelectorAll("td[data-row][data-col]").forEach((node) => {
-      const td = node as HTMLElement;
-      if (td.querySelector("input.cellEdit")) return;
-      const r = parseInt(td.dataset.row ?? "0", 10);
-      const c = parseInt(td.dataset.col ?? "0", 10);
-      const isSel = r === sr && c === sc;
-      td.classList.toggle("selected", isSel);
-      td.tabIndex = isSel ? 0 : -1;
-    });
+    this.virtTableWrap
+      .querySelectorAll("td[data-row][data-col]")
+      .forEach((node) => {
+        const td = node as HTMLElement;
+        if (td.querySelector("input.cellEdit")) return;
+        const r = parseInt(td.dataset.row ?? "0", 10);
+        const c = parseInt(td.dataset.col ?? "0", 10);
+        const isSel = r === sr && c === sc;
+        td.classList.toggle("selected", isSel);
+        td.tabIndex = isSel ? 0 : -1;
+      });
   }
 }
